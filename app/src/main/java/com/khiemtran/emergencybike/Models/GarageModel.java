@@ -1,15 +1,25 @@
 package com.khiemtran.emergencybike.Models;
 
+import com.google.api.client.json.GenericJson;
+import com.google.api.client.util.Key;
+import com.kinvey.java.model.KinveyMetaData;
+
 /**
  * Created by khiem.tran on 23/03/2016.
  */
-public class GarageModel {
+public class GarageModel extends GenericJson{
 
+    @Key
     private String Name;
+    @Key
     private String Address;
+    @Key
     private String Phone;
+    @Key
     private double Lat;
+    @Key
     private double Long;
+    @Key
     private String Tag;
 
     public String getName() {
@@ -59,4 +69,11 @@ public class GarageModel {
     public void setTag(String tag) {
         Tag = tag;
     }
+
+    @Key("_kmd")
+    private KinveyMetaData meta; // Kinvey metadata, OPTIONAL
+    @Key("_acl")
+    private KinveyMetaData.AccessControlList acl;
+
+    public GarageModel(){}
 }

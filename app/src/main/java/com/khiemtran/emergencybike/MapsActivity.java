@@ -1,6 +1,7 @@
 package com.khiemtran.emergencybike;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,6 +11,9 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,10 +28,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.khiemtran.emergencybike.Application.EmergencyBikeApplication;
 import com.khiemtran.emergencybike.Models.GarageModel;
 import com.khiemtran.emergencybike.Utils.General;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements
@@ -55,6 +65,7 @@ public class MapsActivity extends FragmentActivity implements
     private Marker currentMarker;
     private boolean isFirst = false;
     private Context mContext;
+    private List<GarageModel> lstGarageModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,9 +147,24 @@ public class MapsActivity extends FragmentActivity implements
      */
     private void addGarageMarker(){
         String strGarageJson = General.loadJSONFromAsset(this, "tiem_sua_xe.json");
-        Gson gson = new Gson();
-        Type listType = new TypeToken<List<GarageModel>>(){}.getType();
-        List<GarageModel> lstGarageModel = (List<GarageModel>) gson.fromJson(strGarageJson, listType);
+        lstGarageModel = new ArrayList<>();
+        try {
+            JSONArray jsonArray = new JSONArray(strGarageJson);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                GarageModel mGarageModel = new GarageModel();
+                mGarageModel.setName(jsonObject.getString("Name"));
+                mGarageModel.setAddress(jsonObject.getString("Address"));
+                mGarageModel.setPhone(jsonObject.getString("Phone"));
+                mGarageModel.setTag(jsonObject.getString("Tag"));
+                mGarageModel.setLat(jsonObject.getLong("Lat"));
+                mGarageModel.setLong(jsonObject.getLong("Long"));
+                lstGarageModel.add(mGarageModel);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         MarkerOptions marker = new MarkerOptions();
         marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.point_red));
         for (int i = 0; i < lstGarageModel.size(); i++) {
@@ -149,10 +175,20 @@ public class MapsActivity extends FragmentActivity implements
             mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(Marker marker) {
-                    startDialogGarage(mGarageModel);
+                    startDialogGarage(getGarageModelClick(marker));
                 }
             });
         }
+    }
+
+    private GarageModel getGarageModelClick(Marker marker){
+        for (int i = 0; i < lstGarageModel.size(); i++) {
+            if(lstGarageModel.get(i).getLat() == marker.getPosition().latitude &&
+                    lstGarageModel.get(i).getLong() == marker.getPosition().longitude){
+                return lstGarageModel.get(i);
+            }
+        }
+        return null;
     }
 
     /**
@@ -207,7 +243,19 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void startDialogGarage(GarageModel mGarageModel){
-        Log.d("asdasdasd","asdasdasdasd: "+mGarageModel.getName());
+        Dialog mDialog = new Dialog(mContext, android.R.style.Theme_Holo_Dialog_NoActionBar);
+        mDialog.setContentView(R.layout.dialog_garage);
+
+        ((TextView) mDialog.findViewById(R.id.txt_name)).setText(mGarageModel.getName());
+        ((TextView) mDialog.findViewById(R.id.txt_address)).setText(String.format(getString(R.string.txt_garage_adress), mGarageModel.getAddress()));
+        ((TextView) mDialog.findViewById(R.id.txt_phone)).setText(String.format(getString(R.string.txt_garage_phone), mGarageModel.getPhone()));
+        ((LinearLayout) mDialog.findViewById(R.id.root_layout)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        mDialog.show();
     }
 
 }

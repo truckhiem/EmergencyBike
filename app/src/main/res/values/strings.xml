@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">EmergencyBike</string>
     <string name="title_activity_maps">Map</string>
+    <string name="kinvey_collection_machine">EmergencyBikeManage</string>
+    <string name="kinvey_collection_error">Error</string>
+    <string name="api_key">kid_WyXcd76Jx-</string>
+    <string name="api_secret">ecfd09a130e341358f26e0f3b6a25548</string>
+    <string name="txt_garage_adress">Địa chỉ: %s</string>
+    <string name="txt_garage_phone">Điện thoại: %s</string>
+
 </resources>
